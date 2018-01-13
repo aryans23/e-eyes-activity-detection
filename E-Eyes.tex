@@ -1,0 +1,204 @@
+\documentclass[letterpaper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[]{algorithm2e}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{afterpage}
+\usepackage[tocentry, tablegrid]{vhistory} 
+\usepackage{subfig}
+
+\newcommand\blankpage{%
+	\null
+	\thispagestyle{empty}%
+	\addtocounter{page}{-1}%
+	\newpage}
+
+\title{Device Free Activity Identification Using WiFi Channel State Information Signatures}
+%\title{Non-intrusive Elderly Smart-home Healthcare System for Monitoring Short-term and Long-term Anomaly in Daily Activity Patterns}
+\author{Aryan Sharma (UIN: 326006767)}
+
+%\author{Aryan Sharma (UIN: 326006767)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+%\afterpage{\blankpage}
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\begin{versionhistory}
+	\vhEntry{1.0}{11.01.17}{Aryan Sharma}{Created}
+	\vhEntry{1.1}{11.10.04}{Aryan Sharma}{Mid-Term Report}
+\end{versionhistory}
+
+\newpage
+
+\section{Description}
+\label{sec:introduction}
+
+There exists a broad range of applications that benefit from higher-level contextual information, an understanding of activities that persons are engaged in, not just their position inside a coordinate system. By tracking a sequence of meaningful activities and generating statistics for a person, it is possible to monitor well-being and suggest behavioral changes that improve health, especially for children and the elderly. 
+
+This project takes the LSTM approach to classify activities\cite{c1} as baseline and explores and implements the \textit{device-free} location-oriented activity identification at home through the use of existing WiFi access points and WiFi devices\cite{c2}, demonstrating that device-free location-oriented activity recognition is possible (i) using the existing channel state information provided by IEEE 802.11n devices \cite{c8} and (ii) using relatively few wireless links, such as those to existing in-home WiFi devices. The challenge in activity recognition for these applications lies in finding solutions that can provide sufficiently accurate tracking and recognition with minimal infrastructure requirements and without the need to carry a dedicated device. Other device-free systems do not require persons to carry any devices, but they require a dense placement of tens of sensors to create a mesh of wireless links inside the area of interest.
+
+From the online repositories, the project classifies the wireless signals as belonging to an in-place or a walking activity. We refer these two types of activities as loosely-defined because they may involve non-repetitive body movements and the sequences of body movements involved may not remain the same across repetition. Examples of loosely-defined activities include cooking dinner in front of the stove, eating dinner at the dining table, exercising on a treadmill, or working at a desk. Walking activities involve movements between rooms or across a larger room. The system then applies matching algorithms to compare the amplitude measurements against known profiles that identify the activity. Hence, it uses data from a much smaller set of transmitting devices than traditional approaches.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{flow.png}
+	\caption{\label{} Flowchart for the whole project. The green blocks are implemented and tested and the yellow blocks are still to be implemented.}
+\end{figure}
+
+\section{Deliverables}
+
+\subsection{Differentiate In-Place Activities  from Movements}
+
+This project used the Channel State Information to distinguish between In-Place activity and Walking activities. These are the loosely based activities which are further classified at a finer granularity. This is owing to different levels of distortions seen in the CSI data.
+
+\subsection{Detection and Classification of In-Place Activity}
+
+The in-place activity results in a relatively stable distribution of CSI amplitude due to the presence of the human body and (possibly) repetitive body movement over time. Furthermore, different in-place activities cause different distributions of CSI amplitude as the location and/or the repetitive body movement patterns and the posture of the human body are different for different in-place activities. This difference was used to classify in-place activities.
+
+\subsection{Walking Activity Tracking}
+
+It has been shown that the CSI measurements exhibit similar changing patterns for the same trajectory in different rounds, whereas the changes of CSI measurements over time are different for different trajectories. This observation indicates that the CSI pattern is dominated by the unique path of each walking activity and this project will use it for walking activity tracking. 
+
+\section{Data Collection}
+
+The data has been collected from \cite{c1} at \cite{c10}. It posses about 17 GB of data which are annotated for each of the eight activities. This data was collected using Linux 802.11n CSI Tool \cite{c8}.
+
+The files with `input\_' prefix are WiFi Channel State Information data. The files with `annotation\_' prefix are annotation data. In the input dataset, 
+\begin{itemize}
+	\item[$\bullet$] 1st column shows timestamp.
+	\item[$\bullet$] 2nd - 91st column shows (30 subcarrier * 3 antenna) amplitude.
+	\item[$\bullet$] 92nd - 181st column shows (30 subcarrier * 3 antenna) phase.
+\end{itemize}
+
+\section{Methodology}
+
+This project follows the flowchart shown in Figure 1. To identify activities, the system has to match signatures or features of activities to measurements in a way that is robust to noisy signal readings collected from WiFi devices in real-world environments yet are still sufficiently unique to map to a specific activity. The system takes as input time-series amplitude measurements. This data is then preprocessed to remove outliers via a low-pass filter and to filter out artifacts introduces by rate adaptation, where the radios switch to different modulation and coding scheme. This has been already done in the repository. The following steps are then applied to reach to the classification.
+
+\subsection{Coarse Activity Detection}
+
+Various activities causes different degrees of signal changes. We therefore apply the moving variance on top of the CSI measurements to capture this difference and determine the category of the activity. In particular, a large moving variance indicates the presence of a walking activity whereas a small moving variance represents the presence of an in-place activity or no activity at all. Figure 2 shows the points for large moving variance and low moving variance. The plots can be clustered into two classes. The following are the steps for this:
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{cmv_small.png}
+	\caption{\label{} Cumulative Moving Variance on three activities with time}
+\end{figure}
+
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=1\textwidth]{cmv_all.png}
+%	\caption{\label{} Cumulative Moving Variance on all activities with time}
+%\end{figure}
+
+\begin{enumerate}
+	\item[1.] The CSI samples of \(P\) subcarriers are \(C = {C(1),...,C(p),...,C(P)}\), where \(C(p)=[c_1(p),...,c_T(p)]^{'}\) represents \(T\) CSI amplitudes on the \(p^{th}\) subcarrier. We further denote the moving variances of the \(P\) subcarriers as \(V = {V(1), . . . , V(p), . . . , V(P )}\), where \(V(p) = [v_1 (p) , . . . , v_T (p)]\) are the moving variances derived from \(C(P)\). The cumulative moving variance of CSI samples crossing \(P\) subcarriers are calculated as \(\mathcal{V} = \sum_{p=1}^{p=P} V(p)\). An example of cumulative moving variances with time is shown in Figure 2. 
+	
+	\item[2.] The cumulative moving variances are the examined. If the maximum cumulative moving variance \(max(V)\) is larger than the threshold \(\tau_v\) , the CSI samples are determined to contain a walking activity, otherwise they contain an in-place/no activity. The value of \(\tau_v\) is empirically determined. 
+\end{enumerate}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\textwidth]{m_cmv.png}
+	\caption{\label{} Maximum Cumulative Moving Variance on all activities with time}
+\end{figure}
+
+\subsection{In-place Activity Identification}
+
+We observe in Figure 4 that the CSI amplitude distributions are similar for the same activity at different rounds, but distinctive for different activities. This important observation inspires us to exploit the distribution of CSI amplitude to distinguish different in-place activities and shows that a particular in-place activity can be identified by comparing against known profiles.
+
+Based on the characteristics of the in-place activities, the earth mover’s distance (EMD) \cite{c4} technique is employed, which is a well-known approach for evaluating the similarity between two probability distributions. The EMD calculates the minimal cost to transform one distribution into the other. This classifier seeks to compare the distribution of the testing CSI measurements to those of the known in-place activity profiles by using the EMD metric. The steps are as follows:
+
+\begin{enumerate}
+	\item[1.] At run time, it first identifies the testing CSI measurements as a candidate of a particular known in-place activity if the EMD distance from the candidate to the known in-place activity is the minimum among the EMD distances to all known activities stored in the CSI profiles. 
+	
+	\item[2.] Then it further confirms the candidate known in-place activity by comparing the resulted minimal EMD distance to a threshold, which can be empirically determined. The candidate known in-place activity is confirmed if the minimal EMD distance is less than the threshold, otherwise, it will be identified as an unknown activity. 
+\end{enumerate}
+
+\begin{figure}%
+	\centering
+	\subfloat[Run Round 1]{{\includegraphics[width=10cm]{amp_bins_run_1.png} }}%
+	\qquad
+	\subfloat[Run Round 2]{{\includegraphics[width=10cm]{amp_bins_run_2.png} }}%
+	\caption{Amplitude counts in the bins for `Run'}%
+	\label{fig:example}%
+\end{figure}
+
+\subsection{Walking Activity Tracking (TODO)}
+
+The CSI measurements exhibit similar changing patterns for the same trajectory in different rounds, whereas the changes of CSI measurements over time are different for different trajectories. This observation indicates that the CSI pattern is dominated by the unique path of each walking activity.
+
+To do the Walking Path Discrimination Dynamic Time Warping (DTW) is going to be used. This also takes into account the different speed taken by people for the same path. DTW is to align the testing CSI measurements to those of known activities in the profile. DTW stretches and compresses required parts to allow a proper comparison between two data sequences. This is useful to match CSI samples from different walking speeds in real-world scenarios. For multiple sub-carrier groups, Multi-Dimensional Dynamic Time Warping (MD-DTW) is used. The steps that will be followed are as follows:
+
+\begin{enumerate}
+	\item[1.] The vector norm is utilized to calculate the distance matrix according to the following equation: \(d(c_i,c_j^{'} = \sum_{p=1}^{P} (c_i(p) - c_j^{'}(p))^{2}\), where \(C = c_1, c_2,..., c_T\) and \(C^{'} = c_1^{'}, c_2^{'}, ..., c_T^{'}\) are two sequences for walking path discrimination, and where P is the number of dimensions of the sequence data. 
+	\item[2. ] A least cost path is found through this matrix and the MD-DTW distance is the sum of matrix elements along the path.
+	\item[3. ] During activity identification, this system distinguishes each walking activity by calculating the MD-DTW distance between the testing CSI measurements and all the known walking activities in CSI profiles. It then stores the segment of CSI measurements of known activities in profiles. If the MD-DTW distance is less than a threshold (i.e., considering it as a known activity), we then regard the corresponding CSI measurements labeled in the CSI profiles with the minimum distance as the activity identified for the testing measurements.
+\end{enumerate}
+
+\subsection{Data Fusion Crossing Multiple Links (TODO)}
+
+For the data that we have, we can use, multiple access points to improve the activity recognition accuracy based on the basic schemes. 
+
+Assuming L WiFi devices collecting CSI measurements independently and each device having J activity profiles denoted as \({a_1^{l},...,a_j^{l},...,a_J^{l}}, l = 1,...,L\). The final activity recognition result is the \(j^{th}\) activity (profile) that minimizes the weighted summation of the similarities between the collected CSI measurements and the profiles on each WiFi device, i.e., \[ \arg\!\min_x \sum_{l=1}^{L} [w_l^{j}(a_0^{l}, a_j^{l}) * D_j^{l}]\]
+where \(D_j^l\) is the EMD or DTW distance between the CSI measurements and the \(j^{th}\) activity profile on the \(l^{th}\) WiFi device; \(w_j^l (a_l^0 , a_l^j )\) is the normalized weight dominated by the significance of the jth activity on the \(l^{th}\) WiFi device. It is defined as, 
+\[
+\frac{1-\chi(a_0^l, a_j^l)}
+{\sum\limits_{l=1}^{L} 1-\chi(a_0^l, a_j^l}
+\]
+where \(a_0^l\) denotes the profile for empty room on the \(l^{th}\) WiFi device, and \(\chi (a_0^l, a_j^l)\) is the cross correlation between the profile of the empty room and the jth activity on the \(l^{th}\) WiFi device.
+
+\newpage
+
+\section{Metrics (TODO)}
+
+The following metrics will be used to evaluate the performance:
+
+\subsection{Confusion Matrix}
+Each row represents the actual activity performed by the user and each column shows the activity it was classified as by our system. Each cell in the matrix corresponds to the fraction of activity in the row that was classified as the activity in the column.
+
+\subsection{True Positive Rate} 
+TPR for an activity A is defined as the proportion of the instances that are correctly recognized as the activity A among actual A performed.
+
+\subsection{False Positive Rate}
+FPR for an activity A is defined as the percentage of the instances that are incorrectly recognized as A among all testing instances other than A.
+
+
+\section{Project Source Code}
+
+\href{https://github.tamu.edu/aryans/ra-eeyes-activity-detection.git}{https://github.tamu.edu/aryans/ra-eeyes-activity-detection.git}
+
+\section{Discussion}
+
+This project assumes that the location of the detection does not change, so that the profiles remain the same. Also, it is applied on a single occupant system with a relatively stable environment. It also assumes that the data found from the repositories have been preprocessed ie. the Low-pass filtering and MCS index filetering have been taken care of.
+
+There is one important subpart of this system which has not been included in this project so far. That is Acive Profile Construction and updating, which will be useful in cases when there is a distubance in the environment, such as movement of furniture, or re-location of sender or access points of the Wifi. Basically any disturbance that could change the CSI distribution will lead to re-setting of the system. 
+
+\begin{thebibliography}{99}
+	
+	\bibitem{c1} S. Yousefi, H. Narui, S. Dayal, S. Ermon, and S. Valaee`A Survey on Behaviour Recognition Using WiFi Channel State Information'
+	\bibitem{c2} Y. Wang, J. Liu, Y. Chen, M. Gruteser,`E-eyes: Device-free Location-oriented Activity Identification Using Fine-grained WiFi Signatures'
+	\bibitem{c3} Ofir Pele and Michael Werman, `Fast and robust earth mover's distances,' in Proc. 2009 IEEE 12th Int. Conf. on Computer Vision, Kyoto, Japan, 2009, pp. 460-467.
+	\bibitem{c4} Y. Rubner and S. U. C. S. Dept. Perceptual metrics for image database navigation. Number 1621 in Report STAN-CS-TR. Stanford University, 1999.
+	\bibitem{c5} Ofir Pele and Michael Werman, `A linear time histogram metric for improved SIFT matching,' in Computer Vision - ECCV 2008, Marseille, France, 2008, pp. 495-508.
+	\bibitem{c6} W. Wang, . X. Liu, and M, Shahzad, K. Ling, and S. Lu, `Device-Free Human Activity Recognition Using Commercial WiFi Devices'
+	\bibitem{c7} http://pdcc.ntu.edu.sg/wands/Atheros/
+	\bibitem{c8} https://dhalperi.github.io/linux-80211n-csitool/
+	\bibitem{c9} https://stackoverflow.com
+	\bibitem{c10} https://stanford.app.box.com/s/johz79hz7n2jue5biqlxja6vbq7xtk9l
+	
+\end{thebibliography}
+
+\end{document}
