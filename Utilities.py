@@ -27,6 +27,7 @@ class FileUtilities(object):
 		files = os.listdir(self.path)
 		for file in files:
 			df = self.read_csv(self.path+file)
+			# label = str(str(file).split('-')[1])
 			label = str(str(file).split('_')[3])
 			self.labels.append(label)
 			print("Reading " + str(file) + "...")
@@ -39,9 +40,6 @@ class FileUtilities(object):
 		if not self.data_matrices:
 			self.get_data_matrices()
 		for data_matrix in self.data_matrices:
-			self.amplitude.append(np.array(data_matrix[:,1:91]))
+			self.amplitude.append(np.array(data_matrix[:,1:]))		# for new data
+			# self.amplitude.append(np.array(data_matrix[:,1:91]))
 		return self.amplitude
-
-	# def create_amplitude_histograms(self):
-	# 	for mat in self.amplitude:
-	# 		for _ in mat.shape[0]:

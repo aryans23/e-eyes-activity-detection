@@ -12,9 +12,50 @@ from CrossFusion import get_normalized_weights
 from CrossFusion import get_D
 from CrossFusion import final_activity
 
-# utl = FileUtilities('data1/')
 
-# path = '/Users/Apple/Documents/gitRepo/e-eyes-activity-detection/data_input/'
+plt.figure(figsize=(12,6))
+plt.title('Cumulative Moving Variance over time')
+plt.xlabel('Time')
+plt.ylabel('Cumulative Moving Variance')
+
+path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_cur/'
+utl = FileUtilities(path)
+input_file = '2-typing-parsed.csv'
+df = utl.read_csv(path+input_file)
+data = utl.get_data_matrix(df)
+C = data[:,1:]
+print(C)
+mv = MovingVariance(C,20)			# changing window from 1000 to 2
+V = mv.get_moving_var()
+print(V)
+print(V.shape)
+print(type(V))
+CMV = mv.get_cumulative_moving_variance(V)
+plt.plot(range(1, CMV.shape[0]+1) , CMV)
+
+input_file = '7-walking-living-bedroom-parsed.csv'
+df = utl.read_csv(path+input_file)
+data = utl.get_data_matrix(df)
+C = data[:,1:]
+print(C)
+mv = MovingVariance(C,20)			# changing window from 1000 to 2
+V = mv.get_moving_var()
+print(V)
+print(V.shape)
+print(type(V))
+CMV = mv.get_cumulative_moving_variance(V)
+plt.plot(range(1, CMV.shape[0]+1) , CMV)
+
+plt.show()
+
+##########################################
+
+# plt.figure(figsize=(12,6))
+# plt.title('Cumulative Moving Variance over time')
+# plt.xlabel('Time')
+# plt.ylabel('Cumulative Moving Variance')
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_small/'
+# utl = FileUtilities(path)
 # input_file_sitdown = 'input_161219_siamak_sitdown_1.dat.csv'
 # df_sitdown = utl.read_csv(path+input_file_sitdown)
 # data_sitdown = utl.get_data_matrix(df_sitdown)
@@ -26,23 +67,26 @@ from CrossFusion import final_activity
 # CMV_sitdown = mv_sitdown.get_cumulative_moving_variance(V_sitdown)
 # plt.plot(range(1, CMV_sitdown.shape[0]+1) , CMV_sitdown)
 
-# input_file_run = 'input_161219_siamak_run_1.dat.csv'
-# df_run = utl.read_csv(path+input_file_run)
-# data_run = utl.get_data_matrix(df_run)
+
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_cur/'
+# utl = FileUtilities(path)
+# # input_file_run = 'data_small/input_161219_siamak_run_1.dat.csv'
+# input_file_run = 'data_cur/1-empty-parsed.csv'
 # df_run = utl.read_csv(input_file_run)
+# data_run = utl.get_data_matrix(df_run)
 # C_run = data_run[:,1:91]
 # mv_run = MovingVariance(C_run,1000)
 # V_run = mv_run.get_moving_var()
-# # print(V_run.shape)
-# # print(type(V_run))
+# print(V_run.shape)
+# print(type(V_run))
 # CMV_run = mv_run.get_cumulative_moving_variance(V_run)
+# print(CMV_run)
 # plt.plot(range(1, CMV_run.shape[0]+1) , CMV_run)
-
 # plt.show()
 
 ##################
 
-# path = '/Users/Apple/Documents/gitRepo/e-eyes-activity-detection/data_small/'
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_small/'
 # files = os.listdir(path)
 # utl = FileUtilities(path)
 # data_matrices = []
@@ -57,12 +101,11 @@ from CrossFusion import final_activity
 # cad.get_max_variance()
 # cad.plot_max_cmvs()
 
-
 # cad.get_cmv_for_all_files()
 
 ##################
 
-# path = '/Users/Apple/Documents/gitRepo/e-eyes-activity-detection/data_small/'
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_small/'
 # utl = FileUtilities(path)
 # amplitude_matrices = utl.get_amplitude_matrices()
 # print(amplitude_matrices[0].shape)
@@ -88,7 +131,7 @@ from CrossFusion import final_activity
 
 ##################
 
-# path = '/Users/Apple/Documents/gitRepo/e-eyes-activity-detection/data_input/'
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_input/'
 # utl = FileUtilities(path)
 # amplitude_matrices = utl.get_amplitude_matrices()
 # print("Number of matrices read = ", len(amplitude_matrices))
@@ -116,31 +159,31 @@ from CrossFusion import final_activity
 
 ##################
 
-path = '/Users/Apple/Documents/gitRepo/e-eyes-activity-detection/data_small/'
-utl = FileUtilities(path)
-amplitude_matrices = utl.get_amplitude_matrices()
-print("Number of matrices read = ", len(amplitude_matrices))
-labels_np = np.array(utl.labels)
+# path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_small/'
+# utl = FileUtilities(path)
+# amplitude_matrices = utl.get_amplitude_matrices()
+# print("Number of matrices read = ", len(amplitude_matrices))
+# labels_np = np.array(utl.labels)
 
-histograms = []
-for amplitude_matrix in amplitude_matrices:
-	for i in amplitude_matrix:
-		freq = np.zeros(40)
-		for j in i:
-			freq[int(j)] += 1
-	histograms.append(freq)
+# histograms = []
+# for amplitude_matrix in amplitude_matrices:
+# 	for i in amplitude_matrix:
+# 		freq = np.zeros(40)
+# 		for j in i:
+# 			freq[int(j)] += 1
+# 	histograms.append(freq)
 
-for n, freq in enumerate(histograms):
-	ax = plt.subplot(len(histograms), 1, n+1)
-	plt.title(labels_np[n])
-	plt.xlabel('Bins')
-	plt.ylabel('Amplitude Counts')
-	# plt.grid(True)
-	width = 0.7
-	pos = np.arange(freq.shape[0])
-	plt.bar(pos, freq, width)
+# for n, freq in enumerate(histograms):
+# 	ax = plt.subplot(len(histograms), 1, n+1)
+# 	plt.title(labels_np[n])
+# 	plt.xlabel('Bins')
+# 	plt.ylabel('Amplitude Counts')
+# 	# plt.grid(True)
+# 	width = 0.7
+# 	pos = np.arange(freq.shape[0])
+# 	plt.bar(pos, freq, width)
 
-plt.show()
+# plt.show()
 
 
 
