@@ -13,27 +13,28 @@ from CrossFusion import get_D
 from CrossFusion import final_activity
 
 
-plt.figure(figsize=(12,6))
+plt.figure(figsize=(18,6))
 plt.title('Cumulative Moving Variance over time')
 plt.xlabel('Time')
 plt.ylabel('Cumulative Moving Variance')
 
-path = '/Users/Apple/Documents/git-aryans/e-eyes-activity-detection/data_cur/'
+path = '/Users/Apple/Documents/git-aryans/data/walking_loc_liv/'
 utl = FileUtilities(path)
-input_file = '2-typing-parsed.csv'
-df = utl.read_csv(path+input_file)
-data = utl.get_data_matrix(df)
-C = data[:,1:]
-print(C)
-mv = MovingVariance(C,20)			# changing window from 1000 to 2
-V = mv.get_moving_var()
-print(V)
-print(V.shape)
-print(type(V))
-CMV = mv.get_cumulative_moving_variance(V)
-plt.plot(range(1, CMV.shape[0]+1) , CMV)
 
-input_file = '7-walking-living-bedroom-parsed.csv'
+# input_file = '2-typing-parsed.csv'
+# df = utl.read_csv(path+input_file)
+# data = utl.get_data_matrix(df)
+# C = data[:,1:]
+# print(C)
+# mv = MovingVariance(C,20)			# changing window from 1000 to 2
+# V = mv.get_moving_var()
+# print(V)
+# print(V.shape)
+# print(type(V))
+# CMV = mv.get_cumulative_moving_variance(V)
+# plt.plot(range(1, CMV.shape[0]+1) , CMV)
+
+input_file = 'LivingToBed1-parsed.csv'
 df = utl.read_csv(path+input_file)
 data = utl.get_data_matrix(df)
 C = data[:,1:]
@@ -44,6 +45,8 @@ print(V)
 print(V.shape)
 print(type(V))
 CMV = mv.get_cumulative_moving_variance(V)
+plt.grid()
+plt.xticks(np.arange(0, CMV.shape[0], 50))
 plt.plot(range(1, CMV.shape[0]+1) , CMV)
 
 plt.show()
